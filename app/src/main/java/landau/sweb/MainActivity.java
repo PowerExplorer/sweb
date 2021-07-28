@@ -134,6 +134,7 @@ import java.net.*;
 import android.text.*;
 import java.sql.*;
 import java.text.*;
+import android.provider.*;
 
 public class MainActivity extends Activity {
 	 
@@ -326,10 +327,6 @@ public class MainActivity extends Activity {
     private int SCROLL_UP_THRESHOLD = 50;//dpToPx(10f);
 	private float maxFling = 50;
 	GestureDetector gestureDetector;// = new GestureDetector(this, new CustomGestureListener());
-	public static int dpToPx(float dp) {
-        DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
-        return (int) (dp * metrics.density + 0.5f);
-    }
 	
 	private float[] negativeColorArray = new float[] {
 		-1.0f, 0f, 0f, 0f, 255f, // red
@@ -375,30 +372,6 @@ public class MainActivity extends Activity {
     interface MyBooleanSupplier {
         boolean getAsBoolean();
     }
-
-	private static final Pattern CHAR_CODE_PATTERN = Pattern.compile("&#[xX]?([0-9a-zA-F]{2,8});");
-	private static final Pattern UCHAR_CODE_PATTERN = Pattern.compile("\\\\u([0-9a-zA-F]{4})");
-	
-	public static String fixCharCode(CharSequence wholeFile) {
-		long millis = System.currentTimeMillis();
-		Matcher mat = UCHAR_CODE_PATTERN.matcher(wholeFile);
-		StringBuffer sb = new StringBuffer();
-		while (mat.find()) {
-			mat.appendReplacement(sb,
-								  ((char) Integer.parseInt(mat.group(1), 16) + ""));
-		}
-		mat.appendTail(sb);
-		mat = CHAR_CODE_PATTERN.matcher(sb);
-		sb = new StringBuffer();
-		while (mat.find()) {
-			mat.appendReplacement(sb,
-								  ((char) Integer.parseInt(mat.group(1), 10) + ""));
-		}
-		mat.appendTail(sb);
-		Log.d("fix char code time: "
-			  , "" + (System.currentTimeMillis() - millis));
-		return sb.toString();
-	}
 	
 	@SuppressWarnings("unchecked")
     final MenuAction[] menuActions = new MenuAction[]{
@@ -440,7 +413,7 @@ public class MainActivity extends Activity {
 						String url = savedName(currentWebView);
 						String uniqueName = getUniqueName(downloadLocation, url, ".mht");
 						currentWebView.saveWebArchive(uniqueName);
-						Toast.makeText(MainActivity.this, "Saved " + uniqueName, Toast.LENGTH_LONG).show();
+						AndroidUtils.toast(MainActivity.this, "Saved " + uniqueName);
 					}
 				}
 			}),
@@ -597,10 +570,10 @@ public class MainActivity extends Activity {
 						t.webview.getSettings().setLoadsImagesAutomatically(!blockImages);
 					}
 					if (blockImages) {
-						showToast("Blocked Images");
+						AndroidUtils.toast(MainActivity.this, "Blocked Images");
 						blockImagesImageView.setImageResource(R.drawable.adblocker);
 					} else {
-						showToast("Unblocked Images");
+						AndroidUtils.toast(MainActivity.this, "Unblocked Images");
 						blockImagesImageView.setImageResource(R.drawable.ic_doc_image);
 					}
 				}
@@ -661,7 +634,7 @@ public class MainActivity extends Activity {
 					useAdBlocker = !useAdBlocker;
 					initAdblocker();
 					prefs.edit().putBoolean("adblocker", useAdBlocker).apply();
-					Toast.makeText(MainActivity.this, "Ad Blocker " + (useAdBlocker ? "enabled" : "disabled"), Toast.LENGTH_SHORT).show();
+					AndroidUtils.toast(MainActivity.this, "Ad Blocker " + (useAdBlocker ? "enabled" : "disabled"));
 				}
 			}, new MyBooleanSupplier() {
 				@Override
@@ -1349,7 +1322,7 @@ public class MainActivity extends Activity {
 							if (!f.equals(ExceptionLogger.file))
 								f.delete();
 						}
-						showToast("Finished delete all logs");
+						AndroidUtils.toast(MainActivity.this, "Finished delete all logs");
 					}
 				}
 			}),
@@ -1593,7 +1566,7 @@ public class MainActivity extends Activity {
 					if (!hasOrRequestPermission(Manifest.permission.READ_EXTERNAL_STORAGE,
 												null,
 												0)) {
-						Toast.makeText(MainActivity.this, "No permission to read file", Toast.LENGTH_SHORT).show();
+						AndroidUtils.toast(MainActivity.this, "No permission to read file");
 						fileUploadCallback = null;
 						return false;
 					}
@@ -1624,7 +1597,7 @@ public class MainActivity extends Activity {
 					}
 
 					// Everything failed, let user know
-					Toast.makeText(MainActivity.this, "Can't open file chooser", Toast.LENGTH_SHORT).show();
+					AndroidUtils.toast(MainActivity.this, "Can't open file chooser");
 					fileUploadCallback = null;
 					return false;
 				}
@@ -1855,7 +1828,7 @@ public class MainActivity extends Activity {
 					new AlertDialog.Builder(MainActivity.this)
 						.setTitle("Insecure connection")
 						.setMessage(String.format("Error: %s\nURL: %s\n\nCertificate:\n%s",
-												  errorStr, error.getUrl(), certificateToStr(error.getCertificate())))
+												  errorStr, error.getUrl(), AndroidUtils.certificateToStr(error.getCertificate())))
 						.setPositiveButton("Proceed", new OnClickListener() {
 							public void onClick(DialogInterface dialog, int which) {
 								handler.proceed();}})
@@ -2094,31 +2067,6 @@ public class MainActivity extends Activity {
 				}}).show();
     }
 
-    @SuppressLint("DefaultLocale")
-    private static String certificateToStr(final SslCertificate certificate) {
-        if (certificate == null) {
-            return null;
-        }
-        String s = "";
-        final SslCertificate.DName issuedTo = certificate.getIssuedTo();
-        if (issuedTo != null) {
-            s += "Issued to: " + issuedTo.getDName() + "\n";
-        }
-        final SslCertificate.DName issuedBy = certificate.getIssuedBy();
-        if (issuedBy != null) {
-            s += "Issued by: " + issuedBy.getDName() + "\n";
-        }
-        final Date issueDate = certificate.getValidNotBeforeDate();
-        if (issueDate != null) {
-            s += String.format("Issued on: %tF %tT %tz\n", issueDate, issueDate, issueDate);
-        }
-        final Date expiryDate = certificate.getValidNotAfterDate();
-        if (expiryDate != null) {
-            s += String.format("Expires on: %tF %tT %tz\n", expiryDate, expiryDate, expiryDate);
-        }
-        return s;
-    }
-
 	private boolean startDownload(final String url, String filename) {
         if (!hasOrRequestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE,
 									null,
@@ -2161,7 +2109,7 @@ public class MainActivity extends Activity {
 		final DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
 		final Cursor c = dm.query(new DownloadManager.Query().setFilterById(lastDownload));
 		if (c == null) {
-			showToast("Download Not Found");
+			AndroidUtils.toast(MainActivity.this, "Download Not Found");
 		} else {
 			c.moveToFirst();
 			final String name = getClass().getName();
@@ -2183,7 +2131,7 @@ public class MainActivity extends Activity {
 			Log.d(name,
 				  "COLUMN_REASON: "
 				  + c.getInt(c.getColumnIndex(DownloadManager.COLUMN_REASON)));
-			showToast(statusMessage(c));
+			AndroidUtils.toast(MainActivity.this, statusMessage(c));
 			c.close();
 		}
 	}
@@ -2349,10 +2297,6 @@ public class MainActivity extends Activity {
             getWindow().getDecorView().setSystemUiVisibility(isFullscreen ? flags : 0);
         }
     }
-
-	private void showToast(final String st) {
-		Toast.makeText(MainActivity.this, st, Toast.LENGTH_SHORT).show();
-	}
 	
 	public static File externalLogFilesDir = null;
     @Override
@@ -2441,10 +2385,10 @@ public class MainActivity extends Activity {
 												// Calling createWebPrintJob()
 												printTheWebPage(printWeb);
 											} else {
-												Toast.makeText(MainActivity.this, "Not available for device below Android LOLLIPOP", Toast.LENGTH_SHORT).show();
+												AndroidUtils.toast(MainActivity.this, "Not available for device below Android LOLLIPOP");
 											}
 										} else {
-											Toast.makeText(MainActivity.this, "WebPage not fully loaded", Toast.LENGTH_SHORT).show();
+											AndroidUtils.toast(MainActivity.this, "WebPage not fully loaded");
 										}
 										break;
 									case R.id.savePageAsImage:
@@ -2454,7 +2398,7 @@ public class MainActivity extends Activity {
 										String s = "URL: " + getCurrentWebView().getUrl() + "\n\n";
 										s += "Title: " + getCurrentWebView().getTitle() + "\n\n";
 										SslCertificate certificate = getCurrentWebView().getCertificate();
-										s += certificate == null ? "Not secure" : "Certificate:\n" + certificateToStr(certificate);
+										s += certificate == null ? "Not secure" : "Certificate:\n" + AndroidUtils.certificateToStr(certificate);
 
 										new AlertDialog.Builder(MainActivity.this)
 											.setTitle("Page info")
@@ -2509,7 +2453,7 @@ public class MainActivity extends Activity {
 											WebSettings settings = currentTab.webview.getSettings();
 											settings.setBlockNetworkImage(currentTab.blockImages);
 											settings.setLoadsImagesAutomatically(!currentTab.blockImages);
-											showToast("Images " + !currentTab.blockImages);
+											AndroidUtils.toast(MainActivity.this, "Images " + !currentTab.blockImages);
 											break;
 										}
 									case R.id.blockJavaScript:{
@@ -2536,7 +2480,7 @@ public class MainActivity extends Activity {
 												currentTab.webview.evaluateJavascript("javascript:(function(){return '<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>';})()", new ValueCallback<String>() {
 														@Override
 														public void onReceiveValue(String s) {
-															currentTab.webview.loadData(fixCharCode(s.replaceAll("\\\\n", "\n").replaceAll("\\\\\"", "\"").replaceAll("\\\\b", "\b").replaceAll("\\\\t", "\t").replaceAll("\\\\r", "\r")), "text/txt", "utf-8");
+															currentTab.webview.loadData(AndroidUtils.fixCharCode(s.replaceAll("\\\\n", "\n").replaceAll("\\\\\"", "\"").replaceAll("\\\\b", "\b").replaceAll("\\\\t", "\t").replaceAll("\\\\r", "\r")), "text/txt", "utf-8");
 														}
 													});
 											} 
@@ -2544,7 +2488,7 @@ public class MainActivity extends Activity {
 											File f = new File(Uri.decode(url).substring("file:".length()));
 											try {
 												s = readTextFile(f).toString();
-												currentTab.webview.loadData(fixCharCode(s.replaceAll("\\\\n", "\n").replaceAll("\\\\\"", "\"").replaceAll("\\\\b", "\b").replaceAll("\\\\t", "\t").replaceAll("\\\\r", "\r")), "text/txt", "utf-8");
+												currentTab.webview.loadData(AndroidUtils.fixCharCode(s.replaceAll("\\\\n", "\n").replaceAll("\\\\\"", "\"").replaceAll("\\\\b", "\b").replaceAll("\\\\t", "\t").replaceAll("\\\\r", "\r")), "text/txt", "utf-8");
 											} catch (IOException e) {
 												ExceptionLogger.e(TAG, e.getMessage());
 											}
@@ -2765,17 +2709,17 @@ public class MainActivity extends Activity {
         super.onResume();
         if (printJob != null && printBtnPressed) {
             if (printJob.isCompleted()) {
-                Toast.makeText(this, "Printing Completed", Toast.LENGTH_SHORT).show();
+                AndroidUtils.toast(this, "Printing Completed");
             } else if (printJob.isStarted()) {
-                Toast.makeText(this, "Printing isStarted", Toast.LENGTH_SHORT).show();
+                AndroidUtils.toast(this, "Printing isStarted");
             } else if (printJob.isBlocked()) {
-                Toast.makeText(this, "Printing isBlocked", Toast.LENGTH_SHORT).show();
+                AndroidUtils.toast(this, "Printing isBlocked");
             } else if (printJob.isCancelled()) {
-                Toast.makeText(this, "Printing isCancelled", Toast.LENGTH_SHORT).show();
+                AndroidUtils.toast(this, "Printing isCancelled");
             } else if (printJob.isFailed()) {
-                Toast.makeText(this, "Printing isFailed", Toast.LENGTH_SHORT).show();
+                AndroidUtils.toast(this, "Printing isFailed");
             } else if (printJob.isQueued()) {
-                Toast.makeText(this, "Printing isQueued", Toast.LENGTH_SHORT).show();
+                AndroidUtils.toast(this, "Printing isQueued");
             }
             printBtnPressed = false;
         }
@@ -3041,15 +2985,15 @@ public class MainActivity extends Activity {
 					fos.flush();
 					bos.close();
 					fos.close();
-					Toast.makeText(this, "Saved " + savedName, Toast.LENGTH_LONG).show();
+					AndroidUtils.toast(this, "Saved " + savedName);
                 } catch (Throwable e) {
 					ExceptionLogger.e(TAG, e.getMessage());
                 }
 			} else {
-				Toast.makeText(this, "Not available for device below Android LOLLIPOP", Toast.LENGTH_SHORT).show();
+				AndroidUtils.toast(this, "Not available for device below Android LOLLIPOP");
 			}
 		} else {
-			Toast.makeText(MainActivity.this, "WebPage not fully loaded", Toast.LENGTH_SHORT).show();
+			AndroidUtils.toast(MainActivity.this, "WebPage not fully loaded");
 		}
 	}
 	
@@ -3164,9 +3108,8 @@ public class MainActivity extends Activity {
             @SuppressLint("DefaultLocale")
             @Override
             public void onLoadFinished(Loader<Integer> loader, Integer data) {
-                Toast.makeText(MainActivity.this,
-                        String.format("Updated %d / %d adblock subscriptions", data, adblockRulesList.length),
-                        Toast.LENGTH_SHORT).show();
+                AndroidUtils.toast(MainActivity.this,
+                        String.format("Updated %d / %d adblock subscriptions", data, adblockRulesList.length));
                 initAdblocker();
             }
 
@@ -3385,7 +3328,7 @@ public class MainActivity extends Activity {
 		assert clipboard != null;
 		ClipData clipData = ClipData.newPlainText(label, text);
 		clipboard.setPrimaryClip(clipData);
-		showToast("Copied \"" + text + "\" to clipboard");
+		AndroidUtils.toast(MainActivity.this, "Copied \"" + text + "\" to clipboard");
 	}
 
     void addHistory() {
@@ -3410,7 +3353,7 @@ public class MainActivity extends Activity {
         values.put("title", title);
 		values.put("url", url);
         placesDb.insert("bookmarks", null, values);
-		showToast("Added " + url + " to bookmarks");
+		AndroidUtils.toast(MainActivity.this, "Added " + url + " to bookmarks");
 	}
 
     void exportBookmarks() {
@@ -3465,7 +3408,7 @@ public class MainActivity extends Activity {
             }
             bw.write("</DL>\n");
             bw.close();
-            Toast.makeText(this, "Bookmarks exported to bookmarks.html on SD card", Toast.LENGTH_LONG).show();
+            AndroidUtils.toast(this, "Bookmarks exported to bookmarks.html on SD card");
         } catch (IOException e) {
             new AlertDialog.Builder(this)
 				.setTitle("Export bookmarks error")
@@ -3547,7 +3490,7 @@ public class MainActivity extends Activity {
                 stmt.execute();
             }
             placesDb.setTransactionSuccessful();
-            Toast.makeText(this, String.format("Imported %d bookmarks", bookmarks.size()), Toast.LENGTH_SHORT).show();
+            AndroidUtils.toast(this, String.format("Imported %d bookmarks", bookmarks.size()));
         } finally {
             placesDb.endTransaction();
         }
@@ -3658,14 +3601,14 @@ public class MainActivity extends Activity {
 			Uri uri = intent.getData();
 				ExceptionLogger.d(TAG, "URI to open is: " + uri + ", intent " + intent + ", " + intent.getClipData());
 			if (uri != null) {
-				return uri2RawPath(uri);
+				return AndroidUtils.getPath(MainActivity.this, uri);
 			} else {
 				final ClipData clip = intent.getClipData();
 				if (clip != null) {
 					final int itemCount = clip.getItemCount();
 					if (itemCount > 0) {
 						uri = clip.getItemAt(0).getUri();
-						return uri2RawPath(uri);
+						return AndroidUtils.getPath(MainActivity.this, uri);
 					}
 				}
 			}
@@ -3680,43 +3623,6 @@ public class MainActivity extends Activity {
             return "";
         }
     }
-
-	private String uri2RawPath(Uri uri) {
-		String path = "";
-		String scheme = uri.getScheme();
-		if (ContentResolver.SCHEME_FILE.equals(scheme)) {
-			path = uri.getEncodedPath();
-			//ExceptionLogger.log(TAG, "Uri.decode(uri.getEncodedPath()) " + path);
-		} else if (ContentResolver.SCHEME_CONTENT.equals(scheme)) {
-			ContentResolver cr = getContentResolver();
-			Cursor cur = null;
-			try {
-				cur = cr.query(uri, null, null, null, null);
-			} catch (Exception e) {
-				ExceptionLogger.e(TAG, e);
-			}
-			if (cur != null) {
-				cur.moveToFirst();
-				try {
-					path = cur.getString(cur.getColumnIndex("_data"));
-					ExceptionLogger.d(TAG, "cur.getColumnIndex " + path);
-					if (path == null
-						|| !path.startsWith(Environment.getExternalStorageDirectory()
-											.getPath())) {
-						// from content provider
-						path = uri.toString();
-					}
-				} catch (Exception e) {
-					path = uri.toString();
-				}
-			} else {
-				path = uri.toString();
-			}
-		} else{
-			path = uri.toString();
-		}
-		return path;
-	}
 
 	private String urlIntent;
     @Override
@@ -4055,7 +3961,7 @@ public class MainActivity extends Activity {
 				}
 			}
 		} else if (url.startsWith("content")) {
-			url = uri2RawPath(Uri.parse(url));
+			url = AndroidUtils.getPath(MainActivity.this, Uri.parse(url));
         } else {
 			if (url.indexOf(' ') == -1 && Patterns.WEB_URL.matcher(url).matches()) {
 				final int indexOfHash = url.indexOf('#');
