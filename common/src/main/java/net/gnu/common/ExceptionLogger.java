@@ -16,9 +16,10 @@ import net.gnu.util.FileUtil;
 @SuppressWarnings("WeakerAccess")
 public class ExceptionLogger extends net.gnu.util.ExceptionLogger {
     
-	public static void init() {
+	public static void initialize() {
 		try {
             file = new File(ParentActivity.externalLogFilesDir, "sweb_" + new SimpleDateFormat("yyyy.MM.dd HH.mm.ss").format(new Date()) + ".log");
+			file.getParentFile().mkdirs();
 			printWriter = new PrintWriter(new FileWriter(file, true));
         } catch (final IOException e) {
             e.printStackTrace();

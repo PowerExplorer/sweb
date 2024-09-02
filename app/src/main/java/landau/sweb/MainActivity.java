@@ -356,9 +356,21 @@ public class MainActivity extends ParentActivity {
 	private boolean userScriptEnabled;
 	private ArrayList<UserScript> userScriptList;
 	private boolean showHistoryInSpeedDial = true;
-	static boolean autoLookup = false;
+	
 	private int restoreTabs;
-    
+
+	static boolean saveVideoLinks = false;
+	static LinkedList<String> videoLinks = new LinkedList<>();
+	static String videoPath;
+	static String videoPatternSt;
+	static Pattern videoPattern;
+	
+	static boolean saveImageLinks = false;
+	static LinkedList<String> imageLinks = new LinkedList<>();
+	static String imagePath;
+	static String imagePatternSt;
+	static Pattern imagePattern;
+	
 	private Runnable swipeLeft = new FlingLeft();
 	private Runnable swipeRight = new FlingRight();
 	private boolean fullScreenshot = false;
@@ -555,6 +567,149 @@ public class MainActivity extends ParentActivity {
 				@Override
 				public boolean getAsBoolean() {
 					return cacheOffline;
+				}
+			}),
+		new MenuAction("Save Image Links", 0, new Runnable() {
+				@Override
+				public void run() {
+					final View view = getLayoutInflater().inflate(R.layout.save_image_links, null, false);
+
+					final EditText pathEt = ((EditText)view.findViewById(R.id.path));
+					pathEt.setText(imagePath);
+					pathEt.setSelection(0, imagePath.length());
+					final EditText patternEt = ((EditText)view.findViewById(R.id.pattern));
+					patternEt.setText(imagePatternSt);
+					new AlertDialog.Builder(MainActivity.this)
+						.setTitle("Edit Image Links File")
+						.setView(view)
+						.setPositiveButton("Yes", new OnClickListener() {
+							public void onClick(DialogInterface dialog, int which) {
+								saveImageLinks = true;
+								prefs.edit().putBoolean("saveImageLinks", saveImageLinks).apply();
+								fullMenuActionAdapter.notifyDataSetChanged();
+								String path = pathEt.getText().toString().replaceAll("/{2,}", "/");
+								if (path.endsWith("/")) {
+									path = path.substring(0, path.lastIndexOf("/"));
+								}
+								if (FileUtil.ILLEGAL_FILE_CHARS.matcher(path).matches()) {
+									Toast.makeText(MainActivity.this, "File must not contain ?\\:*|\"<>#+%", Toast.LENGTH_LONG).show();
+									return;
+								}
+								final File file = new File(path);
+								if (!file.exists()) {
+									file.getParentFile().mkdirs();
+									try {
+										file.createNewFile();
+									} catch (IOException e) {
+										ExceptionLogger.e(TAG, e.getMessage(), e);
+									}
+								} else if (file.isDirectory()) {
+									Toast.makeText(MainActivity.this, path + " is not a file", Toast.LENGTH_LONG).show();
+									return;
+								}
+								if (!file.canWrite()) {
+									Toast.makeText(MainActivity.this, path + " is read only", Toast.LENGTH_LONG).show();
+									return;
+								}
+								imagePath = path;
+								prefs.edit().putString("imagePath", imagePath).apply();
+
+								final String pattern = patternEt.getText().toString().trim();
+								try {
+									imagePattern = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+									imagePatternSt = pattern;
+									prefs.edit().putString("imagePatternSt", imagePatternSt).apply();
+								} catch (RuntimeException e) {
+									Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+								}
+
+							}})
+						.setNegativeButton("No", new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(final DialogInterface dialog, final int which) {
+								saveImageLinks = false;
+								prefs.edit().putBoolean("saveImageLinks", saveImageLinks).apply();
+								fullMenuActionAdapter.notifyDataSetChanged();
+							}
+						})
+						.show();
+				}
+			}, new MyBooleanSupplier() {
+				@Override
+				public boolean getAsBoolean() {
+					return saveImageLinks;
+				}
+			}),
+		new MenuAction("Save Video Links", 0, new Runnable() {
+				@Override
+				public void run() {
+					
+					final View view = getLayoutInflater().inflate(R.layout.save_image_links, null, false);
+
+					final EditText pathEt = ((EditText)view.findViewById(R.id.path));
+					pathEt.setText(videoPath);
+					pathEt.setSelection(0, videoPath.length());
+					final EditText patternEt = ((EditText)view.findViewById(R.id.pattern));
+					patternEt.setText(videoPatternSt);
+					new AlertDialog.Builder(MainActivity.this)
+						.setTitle("Edit Video Links File")
+						.setView(view)
+						.setPositiveButton("Yes", new OnClickListener() {
+							public void onClick(DialogInterface dialog, int which) {
+								saveVideoLinks = true;
+								prefs.edit().putBoolean("saveVideoLinks", saveVideoLinks).apply();
+								fullMenuActionAdapter.notifyDataSetChanged();
+								String path = pathEt.getText().toString().replaceAll("/{2,}", "/");
+								if (path.endsWith("/")) {
+									path = path.substring(0, path.lastIndexOf("/"));
+								}
+								if (FileUtil.ILLEGAL_FILE_CHARS.matcher(path).matches()) {
+									Toast.makeText(MainActivity.this, "File must not contain ?\\:*|\"<>#+%", Toast.LENGTH_LONG).show();
+									return;
+								}
+								final File file = new File(path);
+								if (!file.exists()) {
+									file.getParentFile().mkdirs();
+									try {
+										file.createNewFile();
+									} catch (IOException e) {
+										ExceptionLogger.e(TAG, e.getMessage(), e);
+									}
+								} else if (file.isDirectory()) {
+									Toast.makeText(MainActivity.this, path + " is not a file", Toast.LENGTH_LONG).show();
+									return;
+								}
+								if (!file.canWrite()) {
+									Toast.makeText(MainActivity.this, path + " is read only", Toast.LENGTH_LONG).show();
+									return;
+								}
+								videoPath = path;
+								prefs.edit().putString("videoPath", videoPath).apply();
+
+								final String pattern = patternEt.getText().toString().trim();
+								try {
+									videoPattern = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+									videoPatternSt = pattern;
+									prefs.edit().putString("videoPatternSt", videoPatternSt).apply();
+								} catch (RuntimeException e) {
+									Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+								}
+
+							}})
+						.setNegativeButton("No", new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(final DialogInterface dialog, final int which) {
+								saveVideoLinks = false;
+								prefs.edit().putBoolean("saveVideoLinks", saveVideoLinks).apply();
+								fullMenuActionAdapter.notifyDataSetChanged();
+							}
+						})
+						.show();
+				}
+			}, new MyBooleanSupplier() {
+				@Override
+				public boolean getAsBoolean() {
+					return saveVideoLinks;
 				}
 			}),
 		new MenuAction("Block CSS", R.drawable.adblocker, new Runnable() {
@@ -951,19 +1106,6 @@ public class MainActivity extends ParentActivity {
 				@Override
 				public boolean getAsBoolean() {
 					return autoHideAddressbar;
-				}
-			}),
-		new MenuAction("Auto Lookup", 0, new Runnable() {
-				@Override
-				public void run() {
-					autoLookup = !autoLookup;
-					prefs.edit().putBoolean("autoLookup", autoLookup).apply();
-
-				}
-			}, new MyBooleanSupplier() {
-				@Override
-				public boolean getAsBoolean() {
-					return autoLookup;
 				}
 			}),
 		new MenuAction("Show History In SpeedDial", 0, new Runnable() {
@@ -2162,9 +2304,9 @@ public class MainActivity extends ParentActivity {
 			ExceptionLogger.d(TAG, "dirOriUrl " + dirOriUrl
 							  + ",\nhostUrl " + hostUrl);
 			final StringBuffer sb = new StringBuffer();
-			if (!currentTab.batchRunning) {
-				saveHtml(currentTab, html, url);
-			} else {
+			if (currentTab.batchRunning) {
+				//saveHtml(currentTab, html, url);
+			//} else {
 				final Matcher mat = LINK_PATTTERN.matcher(html);
 				while (mat.find()) {
 					ExceptionLogger.d(TAG, "mat.group() " + mat.group());
@@ -2545,7 +2687,6 @@ public class MainActivity extends ParentActivity {
 					tabOfWebView.loading = false;
 
 					if (tabOfWebView.md5File != null) {
-						//Utils.saveBookmark(tabOfWebView.extractPath, tabOfWebView.md5File, tabOfWebView.listBookmark);
 						saveHistory(tabOfWebView);//.extractPath, t.md5File, t.historyIndex);
 					}
 					if (!url.equals(tabOfWebView.lastUrl)) {
@@ -2591,15 +2732,15 @@ public class MainActivity extends ParentActivity {
 						tabOfWebView.started = false;
 						applyUserScript(view, url, UserScript.RunAt.IDLE);
 						if (tabOfWebView.autoscroll) {
-							start(tabOfWebView);
-						} else {
+							startAutoScroll(tabOfWebView);
+						}
 							final boolean javaScriptEnabled = tabOfWebView.javaScriptEnabled;
 							view.getSettings().setJavaScriptEnabled(true);
 							//view.evaluateJavascript("window.alert(\"ghj\");", null);
 							view.loadUrl("javascript:window.HTMLOUT.showSource(\"" + tabOfWebView.toString() + "\", document.documentElement.outerHTML, \"" + url + "\")");
 							ExceptionLogger.d(TAG, "javascript:window.HTMLOUT.showSource(\"" + tabOfWebView.toString() + "\", document.documentElement.outerHTML, \"" + url + "\")" + ", source.length " + tabOfWebView.source.length());
 							view.getSettings().setJavaScriptEnabled(javaScriptEnabled);
-						}
+						
 					}
 					if (requestList.getVisibility() == View.VISIBLE
 						&& view.getVisibility() == View.VISIBLE
@@ -2740,7 +2881,24 @@ public class MainActivity extends ParentActivity {
 							}
 							return super.shouldInterceptRequest(view, request);
 						}
-
+						if (saveVideoLinks) {
+							final Matcher mat = videoPattern.matcher(urlToString);
+							if (mat.matches() && !videoLinks.contains(urlToString)) {
+								synchronized (videoLinks) {
+									videoLinks.add(urlToString);
+								}
+								ExceptionLogger.d(TAG, "Video link: " + urlToString);
+							}
+						}
+						if (saveImageLinks) {
+							final Matcher mat = imagePattern.matcher(urlToString);
+							if (mat.matches() && !imageLinks.contains(urlToString)) {
+								synchronized (imageLinks) {
+									imageLinks.add(urlToString);
+								}
+								ExceptionLogger.d(TAG, "Image link: " + urlToString);
+							}
+						}
 						if (isLogRequests) {
 							currentTab.requestsLog.add(urlToString);
 							if (currentTab.logAdapter != null) {
@@ -3407,7 +3565,8 @@ public class MainActivity extends ParentActivity {
 				}
 			});
 		} catch (Throwable e) {
-            new AlertDialog.Builder(MainActivity.this)
+            ExceptionLogger.e(TAG, e.getMessage(), e);
+			new AlertDialog.Builder(MainActivity.this)
 				.setTitle("Can't Download URL")
 				.setMessage(url)
 				.setPositiveButton("OK", onClickDismiss)
@@ -3491,7 +3650,8 @@ public class MainActivity extends ParentActivity {
 	};
 	
     private Tab newTabCommon(final CustomWebView webview, boolean isIncognito) {
-        final WebSettings settings = webview.getSettings();
+        requestList.setVisibility(View.GONE);
+		final WebSettings settings = webview.getSettings();
 		settings.setUserAgentString(userAgentString);//isDesktopUA ? desktopUA : androidUA);
         settings.setUseWideViewPort(isDesktop);
 		
@@ -3651,6 +3811,7 @@ public class MainActivity extends ParentActivity {
 		if (currentTab.showRequestList) {
 			requestList.setVisibility(View.VISIBLE);
 			currentTab.logAdapter.notifyDataSetChanged();
+			wv.requestFocus();
 			requestList.requestFocus();
 		} else {
 			requestList.setVisibility(View.GONE);
@@ -4277,7 +4438,7 @@ public class MainActivity extends ParentActivity {
 															if (currentTab.length <= 0) {
 																currentTab.length = 768;
 															}
-															start(currentTab);
+															startAutoScroll(currentTab);
 															uaAdapter.notifyDataSetChanged();
 														}})
 													.setNegativeButton("Cancel", onClickDismiss)
@@ -5209,8 +5370,19 @@ public class MainActivity extends ParentActivity {
 		deleteAfter = prefs.getString("deleteAfter", "30");
 		userScriptEnabled = prefs.getBoolean("userScriptEnabled",true);
 		showHistoryInSpeedDial = prefs.getBoolean("showHistoryInSpeedDial", true);
-		autoLookup = prefs.getBoolean("autoLookup", false);
+		
+		saveVideoLinks = prefs.getBoolean("saveVideoLinks", false);
+		saveImageLinks = prefs.getBoolean("saveImageLinks", false);
+		
 		SCRAP_PATH = downloadLocation + "/sweb";
+		videoPatternSt = prefs.getString("videoPatternSt", "[^\"\\s]*?\\.(avi|mp4|mkv|wmv|webm)(\\?[^\"\\s]*)?");
+		videoPattern = Pattern.compile(videoPatternSt, Pattern.CASE_INSENSITIVE);
+		videoPath = prefs.getString("videoPath", SCRAP_PATH + "/videos.txt");
+		
+		imagePatternSt = prefs.getString("imagePatternSt", "[^\"\\s]*?\\.(jpe?g|png|bmp|webp|gif|ico|pcx)(\\?[^\"\\s]*)?");
+		imagePattern = Pattern.compile(imagePatternSt, Pattern.CASE_INSENSITIVE);
+		imagePath = prefs.getString("imagePath", SCRAP_PATH + "/images.txt");
+		
 		cacheOffline = prefs.getBoolean("cacheOffline", false);
 		restoreTabs = prefs.getInt("restoreTabs", 0);
 		ExceptionLogger.d(TAG, "Cache dir " + SCRAP_PATH);
@@ -5261,6 +5433,74 @@ public class MainActivity extends ParentActivity {
 		});
     }
 	
+	class SaveLinksTask extends AsyncTask<Void, String, String> {
+
+		@Override
+		protected String doInBackground(Void[] p1) {
+			if (saveVideoLinks) {
+				final LinkedList<String> l = new LinkedList<>();
+				final File file = new File(videoPath);
+				try {
+					if (file.exists()) {
+						final String st = new String(FileUtil.readFileToMemory(file)).trim();
+						if (st.length() > 0) {
+							final String[] ss = st.split("\\s+");
+							for (String s : ss) {
+								//if (!l.contains(s))
+									l.add(s);
+							}
+						}
+					}
+					String remove;
+					while (videoLinks.size() > 0) {
+						remove = videoLinks.remove(0);
+						if (!l.contains(remove)) {
+							l.add(remove);
+						}
+					}
+					FileUtil.is2File(new ByteArrayInputStream(Util.collectionToString(l, false, "\n").getBytes()),
+									 videoPath);
+				}
+				catch (IOException e) {
+					ExceptionLogger.e(TAG, e.getMessage(), e);
+				}
+				ExceptionLogger.d(TAG, "saved " + videoPath);
+			}
+
+			if (saveImageLinks) {
+				final LinkedList<String> l = new LinkedList<>();
+				final File file = new File(imagePath);
+				try {
+					if (file.exists()) {
+						final String st = new String(FileUtil.readFileToMemory(file)).trim();
+						if (st.length() > 0) {
+							final String[] ss = st.split("\\s+");
+							for (String s : ss) {
+								//if (!l.contains(s))
+									l.add(s);
+							}
+						}
+					}
+					String remove;
+					while (imageLinks.size() > 0) {
+						remove = imageLinks.remove(0);
+						if (!l.contains(remove)) {
+							l.add(remove);
+						}
+					}
+					FileUtil.is2File(new ByteArrayInputStream(Util.collectionToString(l, false, "\n").getBytes()),
+									 imagePath);
+				}
+				catch (IOException e) {
+					ExceptionLogger.e(TAG, e.getMessage(), e);
+				}
+				ExceptionLogger.d(TAG, "saved " + imagePath);
+			}
+			return null;
+		}
+
+	}
+	
 	@Override
     protected void onResume() {
         ExceptionLogger.d(TAG, "onResume");
@@ -5287,10 +5527,12 @@ public class MainActivity extends ParentActivity {
     protected void onPause() {
         ExceptionLogger.d(TAG, "onPause");
 		super.onPause();
+		
 		FileOutputStream fos = null;
 		BufferedOutputStream bos = null;
 		ObjectOutputStream oos = null;
         try {
+			new SaveLinksTask().execute();
 			for (Tab t : tabs) {
 				final String url = t.webview.getUrl();
 				if (restoreTabs != 0 && url != null && url.trim().length() > 0) {
@@ -5469,7 +5711,7 @@ public class MainActivity extends ParentActivity {
 		}
 	}
 
-	private void start(final Tab currentTab) {
+	private void startAutoScroll(final Tab currentTab) {
 		currentTab.scrolling = true;
 		currentTab.scrollY = currentTab.webview.computeVerticalScrollOffsetMethod();
 		new Thread(new Runnable() {

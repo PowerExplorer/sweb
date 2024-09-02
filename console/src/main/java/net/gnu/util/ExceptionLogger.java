@@ -25,11 +25,13 @@ public class ExceptionLogger {
 
 	public static void init() {
 		try {
-			printWriter = new PrintWriter(System.out);
-            file = new File("/storage/emulated/0/Android/data/landau.sweb/files/logs/log.txt");
-			file.getParentFile().mkdirs();
-			printWriter = new PrintWriter(new FileWriter(file, false));
-            //d(TAG, System.getenv());
+			if (printWriter == null) {
+				printWriter = new PrintWriter(System.out);
+				file = new File("/storage/emulated/0/log.txt");
+				file.getParentFile().mkdirs();
+				printWriter = new PrintWriter(new FileWriter(file, false));
+				//d(TAG, System.getenv());
+			}
         } catch (Throwable e) {
 			ExceptionLogger.e(TAG, e);
 		}

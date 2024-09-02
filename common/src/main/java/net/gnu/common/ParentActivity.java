@@ -13,6 +13,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.view.KeyEvent;
 import java.net.URLDecoder;
+import android.os.*;
 
 public class ParentActivity extends Activity {
 	
@@ -23,14 +24,14 @@ public class ParentActivity extends Activity {
 	protected long mBackPressed = System.nanoTime();
 	
 	public static final String IMAGE_PAT = "[^\"]*?\\.(gif|jpe?g|png|bmp|webp|tiff?|wmf|psd|pic|ico|svg)(\\?[^\"]*)?";
-	public static final String MEDIA_PAT = "[^\"]*?\\.(avi|mp[24][av]|mp[12345]|mpv[24]?|vob|rmvb|m2ts?|mp2t|r?t[sp]|webm|wm[av]|asf|mkv|av1|mov|qt|mpe?g[1234]?|flv|mp21|opus|aac|pcm|flac|wav|amr|og[gv]|vp[967]|vc1|ra?m|m4[av]|m3u8?|3[gp]2|3gpp?2?)(\\?[^\"]*)?";
+	public static final String MEDIA_PAT = "[^\"\\s]*?\\.(avi|mp[24][av]|mp[12345]|mpv[24]?|vob|rmvb|m2ts?|mp2t|r?t[sp]|webm|wm[av]|asf|mkv|av1|mov|qt|mpe?g[1234]?|flv|mp21|opus|aac|pcm|flac|wav|amr|og[gv]|vp[967]|vc1|ra?m|m4[av]|m3u8?|3[gp]2|3gpp?2?)(\\?[^\"\\s]*)?";
 	public static final String FONT_PAT = "[^\"]*?\\.(otf|ttf|ttc|woff|woff2|eot)(\\?[^\"]*)?";
 	
 	public static Pattern HTML_PATTERN = Pattern.compile("[^\"]*?\\.([xds]?html?|php|txt|java|cpp|hpp|c|h|log)(\\?[^\"]*)?", Pattern.CASE_INSENSITIVE);
 	public static final Pattern IMAGES_PATTERN = Pattern.compile(IMAGE_PAT, Pattern.CASE_INSENSITIVE);
 	public static final Pattern MEDIA_PATTERN = Pattern.compile(MEDIA_PAT, Pattern.CASE_INSENSITIVE);
 	public static final Pattern FONT_PATTERN = Pattern.compile(FONT_PAT, Pattern.CASE_INSENSITIVE);
-
+	
 //    public static class EmptyOnClickListener implements DialogInterface.OnClickListener {
 //		@Override
 //		public void onClick(final DialogInterface p1, final int p2) {
@@ -47,8 +48,8 @@ public class ParentActivity extends Activity {
 	@Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-		externalLogFilesDir = getExternalFilesDir("logs");
-		ExceptionLogger.init();
+		externalLogFilesDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + Environment.DIRECTORY_DOWNLOADS + "/sweb/logs");//getExternalFilesDir("logs");
+		ExceptionLogger.initialize();
 		Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
 				private Thread.UncaughtExceptionHandler defaultUEH = Thread.getDefaultUncaughtExceptionHandler();
 				@Override
