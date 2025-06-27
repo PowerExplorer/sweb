@@ -16,6 +16,8 @@ public class LogArrayAdapter extends ArrayAdapter implements View.OnClickListene
 	
 	boolean showImages = false;
 	MainActivity mainActivity;
+
+	private final static String TAG = "LogArrayAdapter";
 	
 	class Holder {
 		TextView textView;
@@ -77,6 +79,7 @@ public class LogArrayAdapter extends ArrayAdapter implements View.OnClickListene
 		} else {
 			holder = (Holder) convertView.getTag();
 		}
+		try {
 		final ImageView imageView = holder.imageView;
 		final TextView textView = holder.textView;
 		holder.item = getItem(position);
@@ -97,6 +100,9 @@ public class LogArrayAdapter extends ArrayAdapter implements View.OnClickListene
 			textView.setText(path);
 			textView.setVisibility(View.VISIBLE);
 			imageView.setVisibility(View.GONE);
+		}
+		} catch (Throwable t) {
+			ExceptionLogger.e(TAG, t.getMessage(), t);
 		}
 		return convertView;
 	}

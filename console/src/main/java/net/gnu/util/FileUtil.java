@@ -28,6 +28,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Scanner;
+import java.io.ByteArrayInputStream;
+import java.util.*;
+import java.io.*;
 
 public class FileUtil {
 	
@@ -38,110 +41,184 @@ public class FileUtil {
 	public static final Pattern ILLEGAL_FILE_CHARS = Pattern.compile("[^\n]*?[?\\:*|\"<>#+%][^\n]*?");
 	
 	public static void main(String[] args) throws Exception {
-
-//		List<File> files = getFiles(new File("/sdcard/.aide"), true,
-//				Pattern.compile(".*?\\.([dxs]?htm[l]?|txt|java|c|cpp|h|hpp|xml|md|lua|sh|bat|list|depend|js|jsp|mk|config|configure|machine|asm|css|desktop|inc|i|plist|pro|py|s)", Pattern.CASE_INSENSITIVE),
-//				Pattern.compile("", Pattern.CASE_INSENSITIVE));
-//		String collectionToString = Util.collectionToString(files, true, "\r\n");
-//		System.out.println(collectionToString);
-//		System.out.println(Util.collectionToString(System.getProperties().entrySet(), true, "\n"));
-//		String result = null;
-//		try {
-//			String[] args2 = { "/system/bin/cat", "/proc/meminfo" };
-//			result = exec(args2).toString();//, "/system/bin/");
-//		} catch (RuntimeException ex) {
-//			Log.i("fetch_process_info", "ex=" + ex.toString());
-//		}
-//		System.out.println(result);
-//		//System.out.println(System.getenv());
-//
-//		//System.out.println(System.getenv("SECONDARY_STORAGE").split(":")[0]);
-//		//System.out.println(System.getenv("SECONDARY_STORAGE").split(":")[1]);
-//		//deleteDrawable("/sdcard/AppProjects/0SearchExplore/PowerExplorer/PowerExplorer/src/main", "");
-//		//exec("/system/bin/chmod", "-R", "777", "/data/data/com.aide.ui/cache/");
-//		//exec("/system/bin/rm", "-r", "/data/data/com.aide.ui/cache/");
-//		//exec("/system/bin/rm", "/data/data/com.aide.ui/cache/1493867303508.tmp");
-//		exec("/system/bin/ls", "-l", "/data/data/com.aide.ui/files");
-//		//exec("/system/bin/cd /data/data/com.aide.ui/");
-//		//exec("ls", "-l");
-		//exec("/system/bin/rm", "/data/data/com.aide.ui/7z");
-		//exec("/system/bin/mv", "/data/data/com.aide.ui/7z-armeabi-v7a", "/data/data/com.aide.ui/7za");
-		exec("/system/bin/cp", "/sdcard/.aide/7za", "/data/data/com.aide.ui/");
-		exec("/system/bin/chmod", "777", "/data/data/com.aide.ui/7za");
-//		exec("/system/bin/chmod", "777", "/data/data/com.aide.ui/*");
-//		exec("/system/bin/chmod", "777", "/data/data/com.aide.ui/");
-//		exec("/system/bin/chmod", "777", "/data/data/com.aide.ui");
-		//exec("/data/data/com.aide.ui/7za", "i");
-		//exec("/data/data/com.aide.ui/7za");
-		exec("/system/bin/ls", "-l", "/data/data/com.aide.ui/");
-		exec("/system/bin/ls", "-lR", "/data/data/com.aide.ui/cache");
-		exec("/system/bin/ls", "-lR", "/data/data/com.aide.ui/code_cache");
-		exec("/system/bin/ls", "-lR", "/data/data/com.aide.ui/lib");
-		exec("/system/bin/ls", "-l", "/data/data/com.aide.ui/files");
-//		//exec("/system/bin/ls", "-l", "/data/data/com.aide.ui/shared_prefs");
-////		exec("/system/bin/cp", "-R", "/sdcard/tmp/files", "/data/data/com.aide.ui/files");//, "/sdcard/tmp");
-////		exec("/system/bin/ls", "-l", "/data/data/com.aide.ui/files");
-////		exec("/system/bin/ls", "-l", "/data/data/com.aide.ui/shared_prefs");
-//		//exec("/system/bin/mkdir", "/data/data/com.aide.ui/files/ndksupport-20150805/android-ndk-aide/sources/cxx-stl/stlport/libs/armeabi-v7a/thumb/");
-//		//exec("/system/bin/ls", "-l", "/data/data/com.aide.ui/files/ndksupport-20150805/android-ndk-aide/sources/cxx-stl/stlport/libs/armeabi-v7a");
-////		exec("/system/bin/cp", "/data/data/com.aide.ui/files/ndksupport-20150805/android-ndk-aide/sources/cxx-stl/stlport/libs/armeabi-v7a/libstlport_static.a", 
-////			 "/data/data/com.aide.ui/files/ndksupport-20150805/android-ndk-aide/sources/cxx-stl/stlport/libs/armeabi-v7a/thumb/");
-////		exec("/system/bin/cp", "/data/data/com.aide.ui/files/ndksupport-20150805/android-ndk-aide/sources/cxx-stl/stlport/libs/armeabi-v7a/libstlport_shared.so", 
-////			 "/data/data/com.aide.ui/files/ndksupport-20150805/android-ndk-aide/sources/cxx-stl/stlport/libs/armeabi-v7a/thumb/");
-////		exec("/system/bin/chmod", "-R", "777", "/data/data/com.aide.ui/files/ndksupport-20150805/android-ndk-aide/sources/cxx-stl/stlport/libs/armeabi-v7a/thumb/");
-////		
-//		exec("/system/bin/mkdir", "/data/data/com.aide.ui/files/ndksupport-1.707060002E9/android-ndk-aide/sources/cxx-stl/stlport/libs/armeabi-v7a/thumb/");
-//		exec("/system/bin/cp", "/data/data/com.aide.ui/files/ndksupport-1.707060002E9/android-ndk-aide/sources/cxx-stl/stlport/libs/armeabi-v7a/libstlport_static.a", 
-//			 "/data/data/com.aide.ui/files/ndksupport-1.707060002E9/android-ndk-aide/sources/cxx-stl/stlport/libs/armeabi-v7a/thumb/");
-//		exec("/system/bin/cp", "/data/data/com.aide.ui/files/ndksupport-1.707060002E9/android-ndk-aide/sources/cxx-stl/stlport/libs/armeabi-v7a/libstlport_shared.so", 
-//			 "/data/data/com.aide.ui/files/ndksupport-1.707060002E9/android-ndk-aide/sources/cxx-stl/stlport/libs/armeabi-v7a/thumb/");
-//		exec("/system/bin/chmod", "-R", "777", "/data/data/com.aide.ui/files/ndksupport-1.707060002E9/android-ndk-aide/sources/cxx-stl/stlport/libs/armeabi-v7a/thumb/");
-//		exec("/system/bin/ls", "-l", "/data/data/com.aide.ui/files/ndksupport-1.707060002E9/android-ndk-aide/sources/cxx-stl/stlport/libs/armeabi-v7a/thumb/");
-//		//exec("/data/data/com.aide.ui/7za", "x", "-aoa", "-o/data/data/com.aide.ui", "/storage/MicroSD/Apps/ndk-aide-new.7z");
-//		//exec("/data/data/com.aide.ui/7za", "x", "-aoa", "-o/data/data/com.aide.ui", "/storage/MicroSD/FrVN/aide.7z");
-//		//exec("/data/data/com.aide.ui/7za", "x", "-aoa", "-o/data/data/com.aide.ui", "/storage/MicroSD/Apps/aide-lic.zip");
-//		//exec("/system/bin/cp", "-f", "/sdcard/.aide/shared_prefs/com.aide.ui_preferences.xml", "/data/data/com.aide.ui/shared_prefs");//, "/sdcard/tmp");
-//		//exec("/system/bin/ls", "-lR", "/data/data/com.aide.ui/files/ndksupport-20150805/android-ndk-aide/sources/cxx-stl/stlport/libs/armeabi-v7a");
-//		//exec("/system/bin/ls", "-lR", "/data/data/com.aide.ui/");
-//		//Log.d("/data/data/com.aide.ui/", new File("/data/data/com.aide.ui/").list().length + "");
-//		//exec("/system/bin/rm", "/sdcard/rar/ndkaide.7z");
-		//exec("/data/data/com.aide.ui/7za", "a", "-mqs", "/sdcard/.aide/all-aide-ndk.7z", "/data/data/com.aide.ui/");//"-r", "-mqs", "-ssw",  , "/data/data/com.aide.ui/shared_prefs" "/data/data/com.aide.ui/"
-		exec("/data/data/com.aide.ui/7za", "t", "/sdcard/.aide/all-aide-ndk.7z");
-//		//exec("ls", "-l", "/sdcard/rar/");
-//		exec("", "/data/data/com.aide.ui/7za", "x", "-bsp1", "-bb", "-aou", "/sdcard/rar/ndkaide.7z", "-o/sdcard/rar/", ">", "/sdcard/progress.txt");
-////		Entry<BufferedReader, PrintStream> e = execInteract("/system/bin/cp", "-R", "-i", "/sdcard/rar", "/sdcard/.com.free.searcher");
-////		PrintStream p = e.getValue();
-////		BufferedReader b = e.getKey();
-////		Scanner input = new Scanner(System.in);
-////
-////		//System.out.print("Enter: ");
-////		String str = "";//input.nextLine();
-////		while (!"exit".equals(str)) {
-////			while (b.ready()) {
-////				System.out.println(b.readLine());
-////			}
-////			str = input.nextLine();
-////			p.println(str);
-////		}
-//		//exec();
+		addNewLines("/storage/emulated/0/.mixplorer/ADM.txt",
+					"/storage/emulated/0/Download/sweb/images.txt",
+					"/storage/emulated/0/Download/sweb/ADM.txt");
 	}
 	
-	public static StringBuilder exec(final String... cmd) {
-		if (cmd == null || cmd.length == 0) {
-			return new StringBuilder();
+	public static void addNewLines(final String dest, final String... filePaths) {
+		try {
+			if (filePaths != null && filePaths.length > 0) {
+				final LinkedList<String> l = new LinkedList<>();
+				final File file = new File(dest);
+				int i = 0;
+				if (file.exists()) {
+					final String st = new String(FileUtil.readFileToMemory(file)).trim();
+					if (st.length() > 0) {
+						final String[] ss = st.split("\\s+");
+						for (String s : ss) {
+							//if (l.contains(s)) {
+							//	ExceptionLogger.d(TAG, "duplicated 1: " + ++i + ": " + s);
+							//} else {
+								l.add(s);
+							//}
+						}
+					}
+				}
+				ExceptionLogger.d(TAG, dest + " size: " + l.size());
+				for (String s : filePaths) {
+					ExceptionLogger.d(TAG, "filePath: " + s);
+					final String st = new String(FileUtil.readFileToMemory(new File(s))).trim();
+					if (st.length() > 0) {
+						final String[] ss = st.split("\\s+");
+						ExceptionLogger.d(TAG, "size: " + ss.length);
+						int j = 0;
+						for (String s1 : ss) {
+							if (l.contains(s1)) {
+								//ExceptionLogger.d(TAG, "duplicated 2: " + ++i + ": " + s1);
+							} else {
+								l.add(s1);
+								i++;
+								j++;
+							}
+						}
+						ExceptionLogger.d(TAG, " added " +j);
+					}
+				}
+				ExceptionLogger.d(TAG, "size: " + l.size() + " added " +i);
+				FileUtil.is2File(new ByteArrayInputStream(
+									 Util.collectionToString(l, false, "\n").append("\n").toString().getBytes()),
+								 dest);
+			}
+		} catch (IOException e) {
+			ExceptionLogger.e(TAG, e.getMessage(), e);
 		}
+		ExceptionLogger.d(TAG, "saved " + dest);
+	}
+	
+	public void run7zCommand(String binaryPath, String[] args, final String[] inputs) {
+		try {
+			List<String> cmd = new ArrayList<>();
+			cmd.add(binaryPath);
+			if (args != null) {
+				for (String arg : args) {
+					cmd.add(arg);
+				}
+			}
+
+			ProcessBuilder pb = new ProcessBuilder(cmd);
+			pb.redirectErrorStream(false);
+
+			final Process process = pb.start();
+
+			// Thread đọc stdout
+			Thread stdoutThread = new Thread(new Runnable() {
+					@Override
+					public void run() {
+						BufferedReader reader = null;
+						try {
+							reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+							String line;
+							while ((line = reader.readLine()) != null) {
+								Log.d("7z-stdout", line);
+							}
+						} catch (IOException e) {
+							e.printStackTrace();
+						} finally {
+							if (reader != null) {
+								try {
+									reader.close();
+								} catch (IOException ignored) {}
+							}
+						}
+					}
+				});
+			stdoutThread.start();
+
+			// Thread đọc stderr
+			Thread stderrThread = new Thread(new Runnable() {
+					@Override
+					public void run() {
+						BufferedReader reader = null;
+						try {
+							reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+							String line;
+							while ((line = reader.readLine()) != null) {
+								Log.e("7z-stderr", line);
+							}
+						} catch (IOException e) {
+							e.printStackTrace();
+						} finally {
+							if (reader != null) {
+								try {
+									reader.close();
+								} catch (IOException ignored) {}
+							}
+						}
+					}
+				});
+			stderrThread.start();
+
+			// Thread ghi input (stdin)
+			if (inputs != null && inputs.length > 0) {
+				Thread stdinThread = new Thread(new Runnable() {
+						@Override
+						public void run() {
+							BufferedWriter writer = null;
+							try {
+								writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
+								for (String input : inputs) {
+									writer.write(input);
+									writer.newLine();
+									writer.flush();
+									// Nếu cần delay để chờ 7z đọc input thì có thể sleep 1-2s
+								}
+								writer.close();  // Đóng đầu vào khi hết input
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						}
+					});
+				stdinThread.start();
+
+				// Chờ thread input xong
+				stdinThread.join();
+			}
+
+			// Chờ đọc stdout, stderr xong
+			stdoutThread.join();
+			stderrThread.join();
+
+			int exitCode = process.waitFor();
+			Log.d("7z", "Process exited with code " + exitCode);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+
+	
+	public static Map.Entry<Integer, StringBuilder> exec(String... cmd) {
+		if (cmd == null || cmd.length == 0) {
+			return new AbstractMap.SimpleEntry<Integer, StringBuilder>(-1, new StringBuilder());
+		}
+		String arrayToString = Util.arrayToString(cmd, false, " ");
+		System.out.println("\n" + "\n" + arrayToString);
+
 		BufferedReader pout = null;
 		PrintStream pin = null;
-		final StringBuilder sb = new StringBuilder();
 		try {
-			final ProcessBuilder builder = new ProcessBuilder(cmd);
-			builder.directory(new File(System.getenv("EXTERNAL_STORAGE")+"/.aide"));
+			ProcessBuilder builder = new ProcessBuilder(cmd);
+			//builder.directory(new File("/data/data/com.aide.ui"));
 			builder.redirectErrorStream(true);
 //			pb.redirectInput(ProcessBuilder.Redirect.from(new File("in.txt")));
 //			pb.redirectOutput(ProcessBuilder.Redirect.to(new File("out.txt")));
 //			pb.redirectError(ProcessBuilder.Redirect.appendTo(new File("error.log")));
 
 			Process p = builder.start();
+//			Info info = p.info();
+//			System.out.println(info.toString());
 			//Process p = Runtime.getRuntime().exec(cmd);  
 			// Execute with input/output
 
@@ -155,9 +232,8 @@ public class FileUtil {
 //			pin.close();
 
 			// Save the output in a StringBuffer for further processing
+			StringBuilder sb = new StringBuilder();
 			int ch;
-			String arrayToString = Util.arrayToString(cmd, false, " ");
-			System.out.println("\n" + "\n" + arrayToString);
 
 			while ((ch = pout.read()) != -1) {
 				sb.append((char)ch);
@@ -169,17 +245,18 @@ public class FileUtil {
 //			while ((ch = perr.read()) != -1) {
 //				System.out.print((char)ch);
 //			}
-			final int exitValue = p.waitFor();
+			int exitValue = p.waitFor();
 			//System.out.print(sb);
 			System.out.println(arrayToString + " : exit code " + exitValue);
+			return new AbstractMap.SimpleEntry<Integer, StringBuilder>(exitValue, sb);
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		} catch (InterruptedException ex) {
 			ex.printStackTrace();
 		} finally {
-			FileUtil.close(pin, pout);
+			close(pin, pout);
 		}
-		return sb;
+		return new AbstractMap.SimpleEntry<Integer, StringBuilder>(-1, new StringBuilder());
 	}
 
 	public static void close(final Closeable... closable) {
@@ -196,9 +273,9 @@ public class FileUtil {
 		}
 	}
 
-	public static void flushClose(final OutputStream... os) {
-		if (os != null && os.length > 0) {
-			for (OutputStream c : os) {
+	public static void flushClose(final OutputStream... closable) {
+		if (closable != null && closable.length > 0) {
+			for (OutputStream c : closable) {
 				if (c != null) {
 					try {
 						c.flush();
@@ -354,6 +431,222 @@ public class FileUtil {
 //		return new String(byteArr, encoding);
 //	}
 	
+	public static List<File> getFiles(String fs) {
+		return getFiles(new File(fs));
+	}
+
+	public static List<File> getFiles(File f) {
+		Log.d("getFiles f", "" + f);
+		final List<File> fList = new LinkedList<File>();
+		final Stack<File> stk = new Stack<File>();
+		if (f.isDirectory()) {
+			stk.push(f);
+		} else {
+			fList.add(f);
+		}
+		File fi = null;
+		File[] fs;
+		while (stk.size() > 0) {
+			fi = stk.pop();
+			fs = fi.listFiles();
+			if (fs != null) {
+				for (File f2 : fs) {
+					if (f2.isDirectory()) {
+						stk.push(f2);
+					} else {
+						fList.add(f2);
+					}
+				}
+			}
+		}
+		return fList;
+	}
+
+	public static List<File> getFiles(String[] fs) {
+		File[] farr = new File[fs.length];
+		int i = 0;
+		for (String f : fs) {
+			farr[i++] = new File(f);
+		}
+		return getFiles(farr);
+	}
+
+	public static List<File> getFiles(File[] fs) {
+		final Set<File> set = new HashSet<File>(fs.length);
+		final Stack<File> stk = new Stack<File>();
+		for (File f : fs) {
+			if (f.isDirectory()) {
+				stk.push(f);
+			} else {
+				set.add(f);
+			}
+		}
+		File fi = null;
+		while (stk.size() > 0) {
+			fi = stk.pop();
+			fs = fi.listFiles();
+			if (fs != null)
+				for (File f : fs) {
+					if (f.isDirectory()) {
+						stk.push(f);
+					} else {
+						set.add(f);
+					}
+				}
+		}
+		ArrayList<File> arrayList = new ArrayList<File>(set.size());
+		arrayList.addAll(set);
+		return arrayList;
+	}
+
+	// patStr == null || "": accept all
+	public static List<File> getFiles(final File ff[], final String patternStr) {
+		Pattern pat = null;
+		if (patternStr != null && patternStr.trim().length() > 0) {
+			pat = Pattern.compile(patternStr, Pattern.CASE_INSENSITIVE);
+		}
+		return getFiles(ff, pat);
+	}
+
+	public static List<File> getFiles(final String ff[], final Pattern pattern) {
+		File[] farr = new File[ff.length];
+		int i = 0;
+		for (String f : ff) {
+			farr[i++] = new File(f);
+		}
+		return getFiles(farr, pattern);
+	}
+
+	public static List<File> getFiles(final File ff[], final Pattern pattern) {
+		final Set<File> set = new HashSet<File>(ff.length);
+		for (File f : ff) {
+			set.addAll(getFiles(f, pattern));
+		}
+		ArrayList<File> arrayList = new ArrayList<File>(set.size());
+		arrayList.addAll(set);
+		return arrayList;
+	}
+
+	public static List<File> getFiles(final File ff, final Pattern pattern) {
+		final List<File> lf = new LinkedList<File>();
+		final Stack<File> stk = new Stack<File>();
+		if (ff.isFile()) {
+			if (pattern == null) {
+				lf.add(ff);
+			} else {
+				String fName = ff.getName();
+				Matcher mat = pattern.matcher(fName);
+				if (mat.matches()) {
+					lf.add(ff);
+				}
+//				int lastIndexOf = fName.lastIndexOf(".");
+//				if (lastIndexOf >= 0) {
+//					String extLower = fName.substring(lastIndexOf).toLowerCase();
+//					String[] suffixes = patStr.toLowerCase().split(";\\s*");
+//					Arrays.sort(suffixes);
+//					boolean chosen = Arrays.binarySearch(suffixes, extLower) >= 0;
+//					if (chosen) {
+//						lf.add(ff);
+//					}
+//				}
+			}
+		} else {
+			stk.push(ff);
+			File[] fs;
+			File fi = null;
+			if (pattern == null) {
+				while (stk.size() > 0) {
+					fi = stk.pop();
+					fs = fi.listFiles();
+					if (fs != null)
+						for (File f : fs) {
+							if (f.isDirectory()) {
+								stk.push(f);
+							} else {
+								lf.add(f);
+							}
+						}
+				}
+			} else {
+//				String[] suffixes = patStr.toLowerCase().split(";\\s*");
+//				Arrays.sort(suffixes);
+				while (stk.size() > 0) {
+					fi = stk.pop();
+					fs = fi.listFiles();
+					if (fs != null)
+						for (File f : fs) {
+							if (f.isDirectory()) {
+								stk.push(f);
+							} else {
+								final String fName = f.getName();
+								final Matcher mat = pattern.matcher(fName);
+								if (mat.matches()) {
+									lf.add(f);
+								}
+//								int lastIndexOf = fName.lastIndexOf(".");
+//								if (lastIndexOf >= 0) {
+//									String extLower = fName.substring(lastIndexOf).toLowerCase();
+//									boolean chosen = Arrays.binarySearch(suffixes, extLower) >= 0;
+//									if (chosen) {
+//										lf.add(f);
+//									}
+//								}
+							}
+						}
+				}
+			}
+		}
+		return lf;
+	}
+
+	public static List<File> getFiles(final File ff, Pattern includePattern, Pattern excludePattern) {
+		final List<File> lf = new LinkedList<File>();
+		final Stack<File> stk = new Stack<File>();
+		if (includePattern == null || includePattern.pattern().trim().length() == 0) {
+			includePattern = Pattern.compile(".*");
+		}
+		if (excludePattern == null || excludePattern.pattern().trim().length() == 0) {
+			excludePattern = Pattern.compile("");
+		}
+		if (ff.isFile()) {
+			String fName = ff.getName();
+			Matcher inMatcher = includePattern.matcher(fName);
+			Matcher exMatcher = excludePattern.matcher(fName);
+			if (inMatcher.matches() && !exMatcher.matches()) {
+				lf.add(ff);
+			}
+		} else {
+			stk.push(ff);
+//			Log.d("ff", ff.getAbsolutePath());
+			File[] fs;
+			File fi = null;
+			while (stk.size() > 0) {
+				fi = stk.pop();
+				fs = fi.listFiles();
+				if (fs != null)
+//					Log.d("fs", fs + " != null");
+					for (File f : fs) {
+						if (f.isDirectory()) {
+							stk.push(f);
+						} else {
+							String fName = f.getName();
+							Matcher inMatcher = includePattern.matcher(fName);
+							Matcher exMatcher = excludePattern.matcher(fName);
+							Log.d("inMatcher", includePattern.pattern());
+							Log.d("exMatcher", excludePattern.pattern());
+							Log.d("fName", fName);
+							Log.d("in.matches", inMatcher.matches() + "");
+							Log.d("ex.matches", exMatcher.matches() + "");
+							if (inMatcher.matches() && !exMatcher.matches()) {
+								lf.add(f);
+							}
+						}
+					}
+			}
+		}
+		return lf;
+	}
+	
 	public static List<File> getFiles(final File f, boolean includeDir, final Pattern includePat, final Pattern excludePat) {
 		
 		ExceptionLogger.d(TAG, "getFiles.includePat " + includePat);
@@ -411,6 +704,25 @@ public class FileUtil {
 		return fList;
 	}
 
+	public static List<File> getFiles(final String ff[], final Pattern includePattern, final Pattern excludePattern) {
+		File[] farr = new File[ff.length];
+		int i = 0;
+		for (String f : ff) {
+			farr[i++] = new File(f);
+		}
+		return getFiles(farr, includePattern, excludePattern);
+	}
+
+	public static List<File> getFiles(final File ff[], final Pattern includePattern, final Pattern excludePattern) {
+		final Set<File> set = new HashSet<File>(ff.length);
+		for (File f : ff) {
+			set.addAll(getFiles(f, includePattern, excludePattern));
+		}
+		ArrayList<File> arrayList = new ArrayList<File>(set.size());
+		arrayList.addAll(set);
+		return arrayList;
+	}
+	
 	public static String getPathFromUrl(String url, final boolean includeQuestion) {
 		if (includeQuestion) {
 			return url.substring(url.indexOf("//") + 1).replaceAll("\\?", "@");
@@ -475,28 +787,25 @@ public class FileUtil {
 			file.getParentFile().mkdirs();
 		}
 		is2File(is, dirParent + newName);
-//		final File savedFile = new File(dirParent, newName);
-//		ExceptionLogger.d(TAG, "savedFile " + savedFile.getAbsolutePath());
-//		final FileOutputStream fos = new FileOutputStream(savedFile);
-//		final BufferedOutputStream bos = new BufferedOutputStream(fos);
-//		final BufferedInputStream bis = new BufferedInputStream(is);
-//		final byte[] barr = new byte[65536];
-//		int read = 0;
-//		int size = 0;
-//		try {
-//			while ((read = bis.read(barr)) > 0) {
-//				bos.write(barr, 0, read);
-//				size += read;
-//			}
-//			ExceptionLogger.d(TAG, newName + " size " + size);
-//		} finally {
-//			close(bis, is);
-//			flushClose(bos);
-//			flushClose(fos);
-//		}
 		return newName;//savedFile.getName();
 	}
 
+	public static void writeToFile(Collection<?> collection, File file) throws IOException {
+		if (collection != null && file != null) {
+			file.getParentFile().mkdirs();
+			File tempFile = new File(file.getAbsolutePath() + ".tmp");
+			FileWriter fw = new FileWriter(tempFile);
+			for (Object obj : collection) {
+				fw.write(new StringBuilder(obj.toString()).append("\r\n")
+						 .toString());
+			}
+			fw.flush();
+			fw.close();
+			file.delete();
+			tempFile.renameTo(file);
+		}
+	}
+	
 	public static void isAppendFile(final InputStream is, final String fileName) throws IOException {
 		final FileOutputStream fos = new FileOutputStream(fileName, true);
 		final BufferedOutputStream bos = new BufferedOutputStream(fos);
@@ -514,7 +823,7 @@ public class FileUtil {
 	}
 	
 	public static void is2File(final InputStream is, final String fileName) throws IOException {
-		ExceptionLogger.d(TAG, "is2File " + is + ", " + fileName);
+		//ExceptionLogger.d(TAG, "is2File " + is + ", " + fileName);
 		final File file = new File(fileName);
 		final File parentFile = file.getParentFile();
 		if (!parentFile.exists()) {

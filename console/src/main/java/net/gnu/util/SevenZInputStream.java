@@ -5,44 +5,55 @@ import java.io.InputStream;
 import java.io.IOException;
 
 public class SevenZInputStream extends InputStream {
-	private String TAG = "SevenZInputStream";
+	private static final String TAG = "SevenZInputStream";
 
-	final SevenZFile sevenZFile;
-	final int length;
-	final String fileName;
-	final String entryName;
-	final long nano;
-    int pos = 0;
+	private final SevenZFile sevenZFile;
+	private final int length;
+	private final String fileName;
+	private final String entryName;
+	//private final long nano;
+    private int pos = 0;
+	private boolean closed = false;
 
-	public SevenZInputStream(final SevenZFile sevenZFile, final int length, final String fileName, final String entryName) {
-		ExceptionLogger.d(TAG, "length " + Util.nf.format(length) + ", fileName " + fileName +", entryName " + entryName);
+	public SevenZInputStream(final SevenZFile sevenZFile, final int length, final String entryName) {
+		ExceptionLogger.d(TAG, "length " + Util.nf.format(length) + ", sevenZFile " + sevenZFile +", entryName " + entryName);
 		this.sevenZFile = sevenZFile;
 		this.length = length;
-		this.fileName = fileName;
+		this.fileName = sevenZFile.getDefaultName();
 		this.entryName = entryName;
-		nano = System.nanoTime();
+		//nano = System.nanoTime();
 	}
 
 	@Override
     public int read() throws IOException {
+		ensureOpen();
 		final int read = sevenZFile.read();
-		pos++;
+		if (read != -1) 
+			pos++;
 		//ExceptionLogger.d(TAG, "read1 pos " + pos + ", " + read);
 		return read;
 	}
 
 	@Override
     public int read(final byte[] barr) throws IOException {
-		final int read = sevenZFile.read(barr, 0, barr.length);
-		pos += read;
+		ensureOpen();
+		int remaining = length - pos;
+		int readLen = Math.min(barr.length, remaining);
+		final int read = sevenZFile.read(barr, 0, readLen);
+		if (read > 0) 
+			pos += read;
 		//ExceptionLogger.d(TAG, "read2 pos " + pos + ", " + read);
 		return read;
 	}
 
 	@Override
     public int read(final byte[] barr, final int off, final int len) throws IOException {
-		final int read = sevenZFile.read(barr, off, len);
-		pos += read;
+		ensureOpen();
+		int remaining = length - pos;
+		int readLen = Math.min(len, remaining);
+		final int read = sevenZFile.read(barr, off, readLen);
+		if (read > 0) 
+			pos += read;
 		//ExceptionLogger.d(TAG, "read3 pos " + pos + ", " + read);
 		return read;
 	}
@@ -50,6 +61,7 @@ public class SevenZInputStream extends InputStream {
 	@Override
     public long skip(final long n) throws IOException {
 		ExceptionLogger.d(TAG, "skip   " + Util.nf.format(n));
+		ensureOpen();
 		long k = length - pos;
         final long possibleSkipRange = (n < 0) ? 0 : (n < k) ? n : k;
         
@@ -59,7 +71,8 @@ public class SevenZInputStream extends InputStream {
 			final byte[] barr = new byte[LEN];
 			int read = 0;
 			while (k > 0 && (read = sevenZFile.read(barr, 0, (int)(k > LEN ? LEN : k))) > 0) {
-				k -= read;
+				if (read > 0) 
+					k -= read;
 			}
 			pos += (possibleSkipRange - k);
 		}
@@ -68,15 +81,17 @@ public class SevenZInputStream extends InputStream {
 	}
 
 	@Override
-    public int available() {
+    public int available() throws IOException {
+		ensureOpen();
 		//ExceptionLogger.d(TAG, "available " + (length - pos));
-		return length - pos;
+		return Math.max(0, length - pos);
 	}
 
 	@Override
-    public void close() throws IOException {
-		ExceptionLogger.d(TAG, "close pos=" + Util.nf.format(pos) + ", fileName " + fileName +", entryName " + entryName + ", took " + Util.nf.format(System.nanoTime() - nano));
-		sevenZFile.close();
+    public void close() {
+		//ExceptionLogger.d(TAG, "close pos=" + Util.nf.format(pos) + ", sevenZFile " + fileName +", entryName " + entryName + ", took " + Util.nf.format(System.nanoTime() - nano));
+		//sevenZFile.close();
+		closed = true;
 	}
 
 	@Override
@@ -95,5 +110,22 @@ public class SevenZInputStream extends InputStream {
     public boolean markSupported() {
 		ExceptionLogger.d(TAG, "markSupported false");
 		return false;
+	}
+
+    private void ensureOpen() throws IOException {
+        if (closed)
+			throw new IOException("Stream closed");
+    }
+	
+	public int getPosition() {
+		return pos;
+	}
+
+	public String getEntryName() {
+		return entryName;
+	}
+
+	public int getLength() {
+		return length;
 	}
 }

@@ -7,8 +7,8 @@ android {
         applicationId "landau.sweb"
         minSdkVersion 21
         targetSdkVersion 24
-        versionCode 10
-        versionName "1.6.12"
+        versionCode 11
+        versionName "1.6.14"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         resValue "string", "app_name", "SWeb"
     }
@@ -63,7 +63,8 @@ dependencies {
     implementation project(':chm')
     implementation project(':epub')
     implementation project(':lookup')
-    //implementation 'com.android.support:support-annotations:+'//24.1.1'
+	
+	//implementation 'com.android.support:support-annotations:+'//24.1.1'
     //implementation "org.apache.commons:commons-compress:1.22"
     //implementation 'org.apache.james:apache-mime4j-dom:0.8.6'
     //implementation 'org.apache.james:apache-mime4j-core:0.8.6'
@@ -83,6 +84,8 @@ dependencies {
 	//compile "com.tonyodev.fetch2:fetch2:3.0.12"
 	//compile "com.tonyodev.fetch2rx:fetch2rx:3.0.12"
 
+	//compile "com.alibaba:fastjson:1.2.83"
+	//compile 'com.eclipsesource.j2v8:j2v8:6.2.1'//4.8.0'//3.0.5'//
 
 
     ///data/user/0/com.aide.ui/no_backup/.aide/maven/net/lingala/zip4j/zip4j/2.11.2/zip4j-2.11.2.jar

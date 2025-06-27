@@ -58,11 +58,11 @@ public class Util {
 		return sb.toString();
 	}
 
-	public static String collectionToString(final Collection<?> list, final boolean number, final String sep) {
-		if (list == null) {
-			return "";
-		}
+	public static StringBuilder collectionToString(final Collection<?> list, final boolean number, final String sep) {
 		final StringBuilder sb = new StringBuilder();
+		if (list == null) {
+			return sb;
+		}
 		int len = list.size() - 1;
 		int c = 0;
 		if (!number) {
@@ -81,7 +81,7 @@ public class Util {
 				}
 			}
 		}
-		return sb.toString();
+		return sb;
 	}
 
 	public static String arrayToString(final Object[] list, final boolean number, final String sep) {

@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
 	package="landau.sweb"
-	android:versionCode="20210630"
-	android:versionName="2021.06.30"
+	android:versionCode="20250104"
+	android:versionName="2025.01.04"
 >
 
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -96,7 +96,6 @@
 			android:name="com.paragon.dictionary.fbreader.OpenDictionaryActivity"
 			android:theme="@style/FBReader.Transparent"
 			android:configChanges="orientation|keyboardHidden|screenSize"/>
-
 
 		<provider
 			android:name="androidx.core.content.FileProvider"

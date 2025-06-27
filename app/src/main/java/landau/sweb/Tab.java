@@ -31,7 +31,7 @@ public class Tab implements Serializable {
 	boolean loading;
 	transient CustomWebView webview;
 	String url;
-	boolean isDesktop;
+	//boolean isDesktop;
 	long lastDownload = -1L;
 	String sourceName;
 	boolean isIncognito = false;
@@ -56,6 +56,12 @@ public class Tab implements Serializable {
 	boolean blockNetworkLoads;
 	boolean loadWithOverviewMode;
 	boolean javaScriptEnabled;
+	
+	boolean domStorageEnabled;
+	boolean databaseEnabled;
+	boolean useWideViewPort;
+	boolean cloudflareMode;
+	
 	String source = "";
 	ArrayList<String> resourcesList = new ArrayList<>();
 	String includeResPatternStr = ".*?\\b(jpg|jpeg|webp|gif|css|js|ico).*?";
@@ -170,7 +176,10 @@ public class Tab implements Serializable {
 	int scrollMax;
 	int length = 768;
 	public void copyTab(final Tab srcTab) {
-		this.isDesktop = srcTab.isDesktop;
+		this.useWideViewPort = srcTab.useWideViewPort;
+		this.domStorageEnabled = srcTab.domStorageEnabled;
+		this.databaseEnabled = srcTab.databaseEnabled;
+		this.javaScriptEnabled = srcTab.javaScriptEnabled;
 		this.userAgent = srcTab.userAgent;
 		this.isIncognito = srcTab.isIncognito;
 		this.blockImages = srcTab.blockImages;
@@ -196,5 +205,8 @@ public class Tab implements Serializable {
 		this.javaScriptCanOpenWindowsAutomatically = srcTab.javaScriptCanOpenWindowsAutomatically;
 		this.removeIdentifyingHeaders = srcTab.removeIdentifyingHeaders;
 		this.textReflow = srcTab.textReflow;
+		this.textEncoding = srcTab.textEncoding;
+		this.blockNetworkLoads = srcTab.blockNetworkLoads;
+		this.userScriptEnabled = srcTab.userScriptEnabled;
 	}
 }

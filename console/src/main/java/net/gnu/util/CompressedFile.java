@@ -35,6 +35,7 @@ import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.Date;
 import java.util.regex.Pattern;
+import java.io.ByteArrayInputStream;
 //import android.util.Log;
 
 public class CompressedFile implements Serializable {
@@ -63,11 +64,13 @@ public class CompressedFile implements Serializable {
 	public static final Pattern SZIP_PATTERN = Pattern.compile("[^\n]*?\\.(7z)", Pattern.CASE_INSENSITIVE);
 	
 	public CompressedFile(final String filePath) {
-		this.filePath = filePath;
-		this.dest7zFile = new File(this.filePath);
+		this(filePath, null);
 	}
 
-	public CompressedFile(final String filePath, String password) {
+	public CompressedFile(final String filePath, final String password) {
+		if (filePath == null) {
+			throw new NullPointerException("filePath should not be null");
+		}
 		this.filePath = filePath;
 		this.dest7zFile = new File(this.filePath);
 		this.password = password;
@@ -89,37 +92,160 @@ public class CompressedFile implements Serializable {
 			//new File("/storage/emulated/0/.mixplorer/framework.7z"),
 			
 		};
-		File sevenZFile = new File("/storage/0067-7E11/Downloads/Lzma.7z");
+		File sevenZFile = new File("/storage/emulated/0/.aide/all-aide-ndk.zip");
 		//new CompressedFile(sevenZFile.getAbsolutePath()).comressTo7z("a", fs);
-		CompressedFile compressedFile = new CompressedFile(sevenZFile.getAbsolutePath(), "a");
-		long took1 = 0;
-		for (int i = 0 ; i < 5; i++) {
-			took1 += testTime(compressedFile);
-		}
-		compressedFile = new CompressedFile("/storage/0067-7E11/Downloads/Lzma2.7z", "a");
-		long took2 = 0;
-		for (int i = 0 ; i < 5; i++) {
-			took2 += testTime(compressedFile);
-		}
-		Log.d(TAG, Util.nf.format(took1));
-		Log.d(TAG, Util.nf.format(took2));
+		CompressedFile compressedFile = new CompressedFile(sevenZFile.getAbsolutePath());
+		//final List<String> arr = compressedFile.list();
+		compressedFile.extractAll("/storage/emulated/0/.aide/zip");
+		
+//		sevenZFile = new File("/storage/emulated/0/.aide/all-aide-ndk.7z");
+//		compressedFile = new CompressedFile(sevenZFile.getAbsolutePath());
+//		compressedFile.extractAll("/storage/emulated/0/.aide/7z");
+		
+		//compressedFile.extractAll("/data/data/com.aide.ui/");
+		//FileUtil.exec("/system/bin/ls", "-lR", "/data/data/com.aide.ui/files");
+//		long took1 = 0;
+//		for (int i = 0 ; i < 5; i++) {
+//			took1 += testTime(compressedFile);
+//		}
+//		compressedFile = new CompressedFile("/storage/0067-7E11/Downloads/Lzma2.7z", "a");
+//		long took2 = 0;
+//		for (int i = 0 ; i < 5; i++) {
+//			took2 += testTime(compressedFile);
+//		}
+//		Log.d(TAG, "took " + Util.nf.format(took1));
+		//Log.d(TAG, Util.nf.format(took2));
 		//File oZipFile = new File("/storage/0067-7E11/Downloads/Yt4.zip");
 		//new CompressedFile(oZipFile.getAbsolutePath()).comressTo7z("a", fs);
-		Log.d(TAG, "ok");
+		ExceptionLogger.d(TAG, "finished");
 	}
 
-	private static long testTime(CompressedFile compressedFile) throws PasswordRequiredException, CompressorException, IOException, ArchiveException {
-		List<String> arr = compressedFile.list();//("a", fs);
-		long curTime = System.nanoTime();
+	static long testTime(final CompressedFile compressedFile) throws PasswordRequiredException, CompressorException, IOException, ArchiveException {
+		final List<String> arr = compressedFile.list();//("a", fs);
+		final long curTime = System.nanoTime();
 		for (String s : arr) {
 			compressedFile.getResourceAsStream(s);
 		}
-		//long took = System.nanoTime() - curTime;
-		//Log.d(TAG, Util.nf.format(curTime));
-		return System.nanoTime() - curTime;
+		long took = System.nanoTime() - curTime;
+		ExceptionLogger.d(TAG, "took " + Util.nf.format(took));
+		return took;
+	}
+	
+	public synchronized List<String> extractAll(final String outDir) throws PasswordRequiredException {
+		ExceptionLogger.d(TAG, "extractAll " + filePath + ", outDir " + outDir);
+		if (resources == null) {
+			resources = new ArrayList<String>();
+			try {
+				initStream();
+				String name;
+				InputStream is;
+				File file;
+				int count = 0;
+				if (zipFile != null) {
+//					ExceptionLogger.d(TAG, "zipFile.extractAll " + toString() + ", outDir=" + outDir);
+//					zipFile.extractAll(outDir);
+					List<FileHeader> fileHeaders = zipFile.getFileHeaders();
+					ZipInputStream zis;
+					for (FileHeader fh : fileHeaders) {
+						if (fh.isFileNameUTF8Encoded()) {
+							name = fh.getFileName();
+						} else {
+							name = new String(fh.getFileName().getBytes("CP437"), "utf-8");
+						}
+						resources.add(name);
+						file = new File(outDir, name);
+						if (fh.isDirectory()) {
+							file.mkdirs();
+						} else {
+							final int length = (int) fh.getUncompressedSize();
+							ExceptionLogger.d(TAG, ++count + ": " + name + ", length=" + Util.nf.format(length));
+							zis = zipFile.getInputStream(fh);
+							if (zis != null) {
+								//is = new ZipIS(zipInputStream, length);
+								file.getParentFile().mkdirs();
+								FileUtil.is2File(zis, file.getAbsolutePath());
+							}
+						}
+					}
+				} else if (ais != null) {
+					ArchiveEntry entry = null;
+					while ((entry = ais.getNextEntry()) != null) {
+						//ExceptionLogger.d(TAG, entry.getName());
+						if (!ais.canReadEntryData(entry)) {
+							ExceptionLogger.d(TAG, entry.getName() + " can't be read");
+							continue;
+						}
+						name = entry.getName();
+						resources.add(name);
+						file = new File(outDir, name);
+						if (entry.isDirectory()) {
+							file.mkdirs();
+						} else {
+							final int length = (int) entry.getSize();
+							ExceptionLogger.d(TAG, ++count + ": " + name + ", length=" + Util.nf.format(length));
+							file.getParentFile().mkdirs();
+							FileUtil.is2File(ais, file.getAbsolutePath());
+						}
+					}
+				} else if (sevenZFile != null) {
+					final Iterable<SevenZArchiveEntry> iter = sevenZFile.getEntries();
+					//SevenZArchiveEntry entry = null;
+					//while ((entry = sevenZFile.getNextEntry()) != null) {
+					for (SevenZArchiveEntry entry : iter) {
+						name = entry.getName();
+						resources.add(name);
+						file = new File(outDir, name);
+						if (entry.isDirectory()) {
+							file.mkdirs();
+						} else {
+							file.getParentFile().mkdirs();
+							final int length = (int) entry.getSize();
+							ExceptionLogger.d(TAG, ++count + ": " + name + ", length=" + Util.nf.format(length));
+							is = sevenZFile.getInputStream(entry);//new SevenZInputStream(sevenZFile, length, name);
+							FileUtil.is2File(is, file.getAbsolutePath());
+						}
+					}
+				} else if (cis != null) {
+					name = dest7zFile.getName();
+					resources.add(name.substring(0, name.lastIndexOf(".")));
+					ExceptionLogger.d(TAG, name);
+				}
+//				Collections.sort(resources, new NumberComparator());
+//				resources = Collections.unmodifiableList(resources); // protect the list, since the reference will be
+			} catch (PasswordRequiredException t) {
+				throw t;
+			} catch (Throwable t) {
+				ExceptionLogger.e(TAG, t);
+			} finally {
+				close();
+			}
+		}
+		return resources;
 	}
 
-	private void comressTo7z(final String oPassword, final File[] fs) {
+	public long extract(final List<String> arr, final String outDir) throws PasswordRequiredException, CompressorException, IOException, ArchiveException {
+		//final List<String> arr = compressedFile.list();
+		final long curTime = System.nanoTime();
+		InputStream is;
+		File file;
+		int count = 0;
+		for (String s : arr) {
+			is = getResourceAsStream(s);
+			file = new File(outDir, s);
+			ExceptionLogger.d(TAG, ++count + ": " + s);
+			if (is == null) {
+				file.mkdirs();
+			} else {
+				file.getParentFile().mkdirs();
+				FileUtil.is2File(is, file.getAbsolutePath());
+			}
+		}
+		long took = System.nanoTime() - curTime;
+		ExceptionLogger.d(TAG, "extract " + dest7zFile.getName() + ", took " + Util.nf.format(took));
+		return took;
+	}
+
+	public void comressTo7z(final String oPassword, final File[] fs) {
 		ExceptionLogger.d(TAG, dest7zFile.getName());
 		ExceptionLogger.d(TAG, oPassword);
 		try {
@@ -371,7 +497,7 @@ public class CompressedFile implements Serializable {
 		final long l = System.nanoTime();
 		zipParameters.setFileNameInZip(fileName);
 		zipParameters.setLastModifiedFileTime(lastModified);
-		final SevenZInputStream zis = new SevenZInputStream(i7zFile, length, i7zFile.getDefaultName(), fileName);
+		final SevenZInputStream zis = new SevenZInputStream(i7zFile, length, fileName);
 		oZipFile.addStream(zis, zipParameters);
 		added.add(fileName);
 		ExceptionLogger.d(TAG, "Compressed " + ++noFile + " files");
@@ -589,8 +715,8 @@ public class CompressedFile implements Serializable {
 					resources.add(name.substring(0, name.lastIndexOf(".")));
 					ExceptionLogger.d(TAG, name);
 				}
-				Collections.sort(resources, new NumberComparator());
-				resources = Collections.unmodifiableList(resources); // protect the list, since the reference will be
+//				Collections.sort(resources, new NumberComparator());
+//				resources = Collections.unmodifiableList(resources); // protect the list, since the reference will be
 			} catch (PasswordRequiredException t) {
 				throw t;
 			} catch (Throwable t) {
@@ -609,7 +735,7 @@ public class CompressedFile implements Serializable {
 	 * @throws ArchiveException
 	 */
 	public synchronized InputStream getResourceAsStream(final String name) throws IOException, ArchiveException, CompressorException {
-		ExceptionLogger.d(TAG, "getResourceAsStream name=" + name);
+		//ExceptionLogger.d(TAG, "getResourceAsStream name=" + name);
 		if (name == null || name.trim().length() == 0) {
 			return null;
 		}
@@ -639,11 +765,12 @@ public class CompressedFile implements Serializable {
 			}
 			if (fileHeader == null) {
 				ExceptionLogger.d(TAG, name + " not found");
-			} else {
-				final ZipInputStream inputStream = zipFile.getInputStream(fileHeader);
-				if (inputStream != null) {
+			} else if (!fileHeader.isDirectory()) {
+				final ZipInputStream zis = zipFile.getInputStream(fileHeader);
+				if (zis != null) {
 					final int length = (int) fileHeader.getUncompressedSize();
-					return new BufferedInputStream(new ZipIS(inputStream, length));
+					//return new BufferedInputStream(zis);
+					return new BufferedInputStream(new ZipIS(zis, length));
 //					ZipArchiveEntry entry = zipFile.getEntry(name.startsWith("/")?name.substring(1):name);
 //					//ExceptionLogger.d(TAG, "getResourceAsStream entry " + entry);
 //					if ((entry != null && zipFile.canReadEntryData(entry))
@@ -658,14 +785,16 @@ public class CompressedFile implements Serializable {
 			while ((entry = ais.getNextEntry()) != null) {
 				//ExceptionLogger.d(TAG, entry.getName() + ", " + name);
 				final String nam = entry.getName();
-				if (name.equalsIgnoreCase(nam)
-					|| name.equalsIgnoreCase("/"+nam)) {
+				if (!entry.isDirectory() && (name.equalsIgnoreCase(nam)
+					|| name.equalsIgnoreCase("/"+nam))) {
 					if (!ais.canReadEntryData(entry)) {
 						ExceptionLogger.d(TAG, nam + " can't be read");
 						close();
 						return null;
 					}
 					return new BufferedInputStream(ais);
+				} else {
+					return null;
 				}
 			}
 		} else if (sevenZFile != null) {
@@ -675,16 +804,22 @@ public class CompressedFile implements Serializable {
 				final String nam = entry.getName();
 				if (nam.equalsIgnoreCase(name)
 					|| ("/"+nam).equalsIgnoreCase(name)) {
-					final int length = (int) entry.getSize();
-					ExceptionLogger.d(TAG, "found " + nam + ", length=" + Util.nf.format(length));
-//					final byte[] content = new byte[length];
-//					int read = 0;
-//					while (read < length) {
-//						read += sevenZFile.read(content, read, length - read);
-//					}
-					//return new ByteArrayInputStream(content);
-					//return new BufferedInputStream(sevenZFile.getInputStream(e));
-					return new BufferedInputStream(new SevenZInputStream(sevenZFile, length, dest7zFile.getName(), nam));
+					if (entry.hasStream()) {
+						final int length = (int) entry.getSize();
+						//final InputStream zIS = sevenZFile.getInputStream(entry);
+						ExceptionLogger.d(TAG, "found " + nam + ", length=" + Util.nf.format(length));
+//						final byte[] content = new byte[length];
+//						int read = 0;
+//						while (read < length) {
+//							read += sevenZFile.read(content, read, length - read);
+//						}
+//						return new ByteArrayInputStream(content);
+						//return new BufferedInputStream(zIS);
+						//return zIS;
+						return new BufferedInputStream(new SevenZInputStream(sevenZFile, length, nam));
+					} else {
+						return null;
+					}
 				}
 			}
 		} else {

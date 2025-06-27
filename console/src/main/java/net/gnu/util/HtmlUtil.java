@@ -159,7 +159,7 @@ public class HtmlUtil {
 				}
 			}
 		}
-		Log.d(TAG, "new " + set.size() + ", duplicated " + (setAll.size()-set.size()));
+		ExceptionLogger.d(TAG, "new " + set.size() + ", duplicated " + (setAll.size()-set.size()));
 		return new TreeSet[]{set, setAll};
 	}
 	
@@ -188,7 +188,7 @@ public class HtmlUtil {
 						newVideo++;
 					}
 				}
-				Log.d(TAG, "extractLink " + no + ", dup " + (no-newVideo));
+				ExceptionLogger.d(TAG, "extractLink " + no + ", dup " + (no-newVideo));
 			}
 		}
 		return new Set[]{set, setAll};
